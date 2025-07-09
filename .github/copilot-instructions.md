@@ -67,8 +67,8 @@ async getUsers(): Promise<UserList> {
 
 ```typescript
 // ✅ 正確 - 使用配置管理
-const apiConfig = useApiConfig();
-const baseURL = apiConfig.baseURL;
+const projectConfig = useProjectConfig();
+const baseURL = projectConfig.baseURL;
 
 // ❌ 錯誤 - 不要硬編碼
 const baseURL = '/api/users';
@@ -95,7 +95,7 @@ import { navigateTo } from '#app';
 ```typescript
 import { userApi } from '~/service/api/user';
 import type { User, CreateUserInput } from '~/service/schema/user';
-import { useApiConfig, useProjectConfig } from '~/composables/useAppConfig';
+import { useProjectConfig } from '~/composables/useProjectConfig';
 ```
 
 ## 開發指南
@@ -117,7 +117,7 @@ import { userApi } from '~/service/api/user';
 import type { User } from '~/service/schema/user';
 
 // 使用配置而非硬編碼
-const apiConfig = useApiConfig();
+const projectConfig = useProjectConfig();
 </script>
 ```
 

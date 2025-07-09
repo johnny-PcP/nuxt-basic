@@ -1,3 +1,5 @@
+import tailwindcss from '@tailwindcss/vite';
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
@@ -5,6 +7,10 @@ export default defineNuxtConfig({
   components: false, // 禁用自動導入 components
   imports: {
     autoImport: false, // 禁用自動導入 composables 和 utils
+  },
+  css: ['~/assets/css/main.css'],
+  vite: {
+    plugins: [tailwindcss()],
   },
   modules: [
     '@nuxt/eslint',

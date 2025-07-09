@@ -35,7 +35,7 @@ npm run dev:production
 ├── .env.docker               # Docker 環境配置
 ├── .env.production           # 生產環境配置
 ├── composables/
-│   ├── useAppConfig.ts       # 應用配置管理 (新)
+│   ├── useProjectConfig.ts   # 專案配置管理 (新)
 │   └── useConfigValidation.ts # 配置驗證工具 (新)
 ├── service/
 │   ├── api/
@@ -200,7 +200,7 @@ npm run dev --dotenv .env.docker
 
 ```javascript
 // 查看目前配置
-console.log(useAppConfig());
+console.log(useProjectConfig());
 ```
 
 ### 常見問題

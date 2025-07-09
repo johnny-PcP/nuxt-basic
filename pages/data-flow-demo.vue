@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1 class="page-title">Nuxt 3 + Zod + Service 架構示範</h1>
+    <h1 class="page-title">Nuxt 3 + Zod + Service 資料流DEMO</h1>
 
     <!-- API 配置資訊 -->
     <div class="config-section">
@@ -9,10 +9,11 @@
       <!-- 應用資訊 -->
       <div class="config-card">
         <h3 class="card-title">📱 應用資訊</h3>
-        <p><strong>名稱:</strong> {{ appConfig.app.name }}</p>
-        <p><strong>版本:</strong> {{ appConfig.app.version }}</p>
+        <p><strong>名稱:</strong> {{ projectConfig.appName }}</p>
+        <p><strong>版本:</strong> {{ projectConfig.appVersion }}</p>
         <p>
-          <strong>除錯模式:</strong> {{ appConfig.app.debug ? '開啟' : '關閉' }}
+          <strong>除錯模式:</strong>
+          {{ projectConfig.appDebug ? '開啟' : '關閉' }}
         </p>
       </div>
 
@@ -23,32 +24,32 @@
           <strong>環境:</strong>
           <span
             :class="{
-              'env-production': apiConfig.environment === 'production',
-              'env-docker': apiConfig.environment === 'docker',
-              'env-development': apiConfig.environment === 'development',
+              'env-production': projectConfig.environment === 'production',
+              'env-docker': projectConfig.environment === 'docker',
+              'env-development': projectConfig.environment === 'development',
             }"
             class="env-badge"
           >
-            {{ apiConfig.environment }}
+            {{ projectConfig.environment }}
           </span>
         </p>
         <p>
           <strong>Base URL:</strong>
-          <code class="code-inline">{{ apiConfig.baseURL }}</code>
+          <code class="code-inline">{{ projectConfig.baseURL }}</code>
         </p>
         <p>
           <strong>使用 Mock:</strong>
           <span
             :class="{
-              'status-active': apiConfig.useMock,
-              'status-inactive': !apiConfig.useMock,
+              'status-active': projectConfig.useMock,
+              'status-inactive': !projectConfig.useMock,
             }"
             class="status-badge"
           >
-            {{ apiConfig.useMock ? '✅ 是' : '❌ 否' }}
+            {{ projectConfig.useMock ? '✅ 是' : '❌ 否' }}
           </span>
         </p>
-        <p><strong>超時設定:</strong> {{ apiConfig.timeout }}ms</p>
+        <p><strong>超時設定:</strong> {{ projectConfig.timeout }}ms</p>
       </div>
 
       <div class="environment-guide">
@@ -203,12 +204,10 @@
 // 手動 import 需要的功能
 import { ref, onMounted, computed } from 'vue';
 import { userApi } from '~/service/api/user';
-import { useProjectConfig } from '~/composables/useAppConfig';
+import { useProjectConfig } from '~/composables/useProjectConfig';
 import type { User, CreateUserInput } from '~/service/schema/user';
-
-// 取得完整應用配置
-const appConfig = computed(() => useProjectConfig());
-const apiConfig = computed(() => appConfig.value.api);
+// 取得專案配置
+const projectConfig = computed(() => useProjectConfig());
 
 // 響應式資料
 const users = ref<User[]>([]);
@@ -243,7 +242,7 @@ async function loadUsers() {
   try {
     users.value = await userApi.getUsers();
     console.log('載入的用戶:', users.value);
-    console.log('使用配置:', apiConfig.value);
+    console.log('使用配置:', projectConfig.value);
   } catch (err) {
     error.value = err instanceof Error ? err.message : '未知錯誤';
     console.error('載入用戶失敗:', err);

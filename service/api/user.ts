@@ -1,6 +1,6 @@
 // 由於關閉了 auto import，需要手動 import 所有 Nuxt 功能
 import { $fetch } from 'ofetch'; // Nuxt 內建的 fetch 函式
-import { useApiConfig } from '~/composables/useAppConfig';
+import { useProjectConfig } from '~/composables/useProjectConfig';
 import type {
   User,
   UserList,
@@ -18,8 +18,8 @@ import {
 
 // 封裝的 API 類別
 export class UserApi {
-  private getApiConfig() {
-    return useApiConfig();
+  private getProjectConfig() {
+    return useProjectConfig();
   }
 
   /**
@@ -28,12 +28,12 @@ export class UserApi {
    */
   async getUsers(): Promise<UserList> {
     try {
-      const apiConfig = this.getApiConfig();
+      const projectConfig = this.getProjectConfig();
 
-      if (apiConfig.useMock) {
+      if (projectConfig.useMock) {
         // 使用 Mock 資料
         const response = await $fetch('/users.json', {
-          baseURL: apiConfig.baseURL,
+          baseURL: projectConfig.baseURL,
         });
 
         // 使用 Zod 驗證資料格式
@@ -42,7 +42,7 @@ export class UserApi {
       } else {
         // 真實 API 呼叫
         const response = await $fetch<UserListResponse>('/users', {
-          baseURL: apiConfig.baseURL,
+          baseURL: projectConfig.baseURL,
         });
 
         // 驗證 API Response 格式
@@ -60,9 +60,9 @@ export class UserApi {
    */
   async getUserById(id: number): Promise<User | null> {
     try {
-      const apiConfig = this.getApiConfig();
+      const projectConfig = this.getProjectConfig();
 
-      if (apiConfig.useMock) {
+      if (projectConfig.useMock) {
         // Mock 模式：從列表中尋找
         const users = await this.getUsers();
         const user = users.find((u) => u.id === id);
@@ -76,7 +76,7 @@ export class UserApi {
       } else {
         // 真實 API 呼叫
         const response = await $fetch<UserResponse>(`/users/${id}`, {
-          baseURL: apiConfig.baseURL,
+          baseURL: projectConfig.baseURL,
         });
 
         // 驗證 API Response 格式
@@ -96,9 +96,9 @@ export class UserApi {
     try {
       // 先驗證輸入資料
       const validatedInput = CreateUserSchema.parse(userData);
-      const apiConfig = this.getApiConfig();
+      const projectConfig = this.getProjectConfig();
 
-      if (apiConfig.useMock) {
+      if (projectConfig.useMock) {
         // Mock 模式：模擬創建用戶
         const newUser: User = {
           id: Date.now(), // 簡單的 ID 生成
@@ -112,7 +112,7 @@ export class UserApi {
         // 真實 API 呼叫
         const response = await $fetch<UserResponse>('/users', {
           method: 'POST',
-          baseURL: apiConfig.baseURL,
+          baseURL: projectConfig.baseURL,
           body: validatedInput,
         });
 
@@ -144,13 +144,6 @@ export class UserApi {
         error: error instanceof Error ? error.message : '驗證失敗',
       };
     }
-  }
-
-  /**
-   * 取得目前 API 配置資訊
-   */
-  getConfig() {
-    return this.getApiConfig();
   }
 }
 

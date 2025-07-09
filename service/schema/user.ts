@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createApiResponseSchema } from './common';
 
 // 定義 User Schema
 export const UserSchema = z.object({
@@ -14,17 +15,8 @@ export const UserSchema = z.object({
 export const UserListSchema = z.array(UserSchema);
 
 // 建立 API Response Schema
-export const UserResponseSchema = z.object({
-  success: z.boolean(),
-  data: UserSchema,
-  message: z.string().optional(),
-});
-
-export const UserListResponseSchema = z.object({
-  success: z.boolean(),
-  data: UserListSchema,
-  message: z.string().optional(),
-});
+export const UserResponseSchema = createApiResponseSchema(UserSchema);
+export const UserListResponseSchema = createApiResponseSchema(UserListSchema);
 
 // TypeScript推導型別
 export type User = z.infer<typeof UserSchema>;
