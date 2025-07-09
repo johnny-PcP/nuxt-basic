@@ -18,7 +18,12 @@ logs
 .fleet
 .idea
 
-# Local env files
-.env
-.env.*
-!.env.example
+# AI and Copilot files
+.ai-project-context.md
+.github/copilot-instructions.md
+
+# Note: .env files are NOT ignored for development convenience
+# If you need to ignore specific env files, add them manually
+# .env
+# .env.*
+# !.env.example
