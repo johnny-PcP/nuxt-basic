@@ -1,0 +1,11 @@
+{
+  "success": true,
+  "data": {
+    "id": 2,
+    "name": "李四",
+    "email": "li@example.com",
+    "age": 30,
+    "isActive": false,
+    "createdAt": "2024-01-14T09:20:00Z"
+  }
+}

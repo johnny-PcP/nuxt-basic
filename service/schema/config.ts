@@ -1,18 +1,15 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
-// 定義專案配置 Schema
+// 專案配置 Schema 定義
 export const ProjectConfigSchema = z.object({
-  // API 相關配置
+  // API 服務配置
   environment: z.enum(['development', 'docker', 'production']),
-  baseURL: z.string().min(1), // 簡化 baseURL 驗證，只要求非空字串
-  useMock: z.boolean(),
+  baseURL: z.string().min(1),
   timeout: z.number().positive(),
 
-  // 應用程式相關配置
-  appName: z.string().min(1),
-  appVersion: z.string().min(1), // 簡化版本驗證
+  // 應用程式狀態配置
   appDebug: z.boolean(),
-});
+})
 
-// 類型推導
-export type ProjectConfigType = z.infer<typeof ProjectConfigSchema>;
+// 專案配置型別推導
+export type ProjectConfigType = z.infer<typeof ProjectConfigSchema>

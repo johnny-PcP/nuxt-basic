@@ -158,7 +158,7 @@ export const ProductSchema = z.object({
   id: z.number(),
   name: z.string().min(1),
   price: z.number().positive(),
-});
+})
 ```
 
 2. **建立 API 服務**
@@ -200,7 +200,7 @@ npm run dev --dotenv .env.docker
 
 ```javascript
 // 查看目前配置
-console.log(useProjectConfig());
+console.log(useProjectConfig())
 ```
 
 ### 常見問題
