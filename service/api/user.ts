@@ -21,16 +21,10 @@ export class UserApi {
     try {
       const projectConfig = this.getProjectConfig()
 
-      // 根據環境決定 API 路徑
-      const apiPath = projectConfig.environment === 'development'
-        ? '/mock/users-api.json'
-        : '/users'
-
-      const response = await $fetch(apiPath, {
+      const response = await $fetch('/api/users', {
         baseURL: projectConfig.baseURL,
       })
 
-      // 統一的 API Response 格式驗證
       const validationResult = validateSchema(
         UserListResponseSchema,
         response,
@@ -51,16 +45,10 @@ export class UserApi {
     try {
       const projectConfig = this.getProjectConfig()
 
-      // 根據環境決定 API 路徑
-      const apiPath = projectConfig.environment === 'development'
-        ? `/mock/user-${id}.json`
-        : `/users/${id}`
-
-      const response = await $fetch(apiPath, {
+      const response = await $fetch(`/api/users/${id}`, {
         baseURL: projectConfig.baseURL,
       })
 
-      // 統一的 API Response 格式驗證
       const validationResult = validateSchema(UserResponseSchema, response, {
         errorMessage: 'API 回應格式驗證失敗',
         throwOnError: true,
@@ -68,7 +56,6 @@ export class UserApi {
       return validationResult.data!.data
     }
     catch {
-      // 如果找不到用戶，返回 null
       return null
     }
   }
@@ -76,7 +63,6 @@ export class UserApi {
   // 創建新用戶
   async createUser(userData: CreateUserInput): Promise<User> {
     try {
-      // 輸入資料驗證
       const inputValidation = validateSchema(CreateUserSchema, userData, {
         errorMessage: '創建用戶輸入資料驗證失敗',
         throwOnError: true,
@@ -84,36 +70,62 @@ export class UserApi {
       const validatedInput = inputValidation.data!
       const projectConfig = this.getProjectConfig()
 
-      if (projectConfig.environment === 'development') {
-        // 開發環境：模擬創建用戶
-        const newUser: User = {
-          id: Date.now(), // 簡單 ID 生成
-          ...validatedInput,
-          isActive: validatedInput.isActive ?? true,
-          createdAt: new Date().toISOString(),
-        }
+      const response = await $fetch('/api/users', {
+        method: 'POST',
+        baseURL: projectConfig.baseURL,
+        body: validatedInput,
+      })
 
-        // 回傳 API 格式
-        return newUser
-      }
-      else {
-        // 生產環境：統一的 API 呼叫
-        const response = await $fetch('/users', {
-          method: 'POST',
-          baseURL: projectConfig.baseURL,
-          body: validatedInput,
-        })
-
-        // 統一的 API Response 格式驗證
-        const responseValidation = validateSchema(UserResponseSchema, response, {
-          errorMessage: 'API 回應格式驗證失敗',
-          throwOnError: true,
-        })
-        return responseValidation.data!.data
-      }
+      const responseValidation = validateSchema(UserResponseSchema, response, {
+        errorMessage: 'API 回應格式驗證失敗',
+        throwOnError: true,
+      })
+      return responseValidation.data!.data
     }
     catch {
       throw new Error('創建用戶失敗')
+    }
+  }
+
+  // 更新用戶
+  async updateUser(id: number, userData: Partial<CreateUserInput>): Promise<User> {
+    try {
+      const projectConfig = this.getProjectConfig()
+
+      const response = await $fetch(`/api/users/${id}`, {
+        method: 'PUT',
+        baseURL: projectConfig.baseURL,
+        body: userData,
+      })
+
+      const responseValidation = validateSchema(UserResponseSchema, response, {
+        errorMessage: 'API 回應格式驗證失敗',
+        throwOnError: true,
+      })
+      return responseValidation.data!.data
+    }
+    catch {
+      throw new Error('更新用戶失敗')
+    }
+  }
+
+  // 刪除用戶
+  async deleteUser(id: number): Promise<{ success: boolean, message: string }> {
+    try {
+      const projectConfig = this.getProjectConfig()
+
+      const response = await $fetch(`/api/users/${id}`, {
+        method: 'DELETE',
+        baseURL: projectConfig.baseURL,
+      })
+
+      return {
+        success: response.success || false,
+        message: response.message || '刪除成功',
+      }
+    }
+    catch {
+      throw new Error('刪除用戶失敗')
     }
   }
 

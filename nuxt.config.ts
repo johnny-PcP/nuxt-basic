@@ -26,7 +26,7 @@ export default defineNuxtConfig({
     public: {
       // API 服務配置
       apiEnv: process.env.API_ENV || 'development',
-      apiBaseUrl: process.env.API_BASE_URL || '/mock',
+      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000',
       apiTimeout: Number.parseInt(process.env.API_TIMEOUT || '5000'),
 
       // 應用程式狀態配置

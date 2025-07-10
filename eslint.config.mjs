@@ -14,16 +14,16 @@ export default antfu({
 
   // 自定義規則覆蓋
   rules: {
-    // 換行規則
+    // 換行規則 - 適合大型專案的可讀性
     'vue/max-attributes-per-line': ['error', {
       singleline: { max: 1 }, // 單行允許最多 1 個屬性
       multiline: { max: 1 }, // 多行時每行 1 個屬性
     }],
 
-    // 允許 console （本案非生產環境會用到）
+    // 允許 console（開發和除錯需要）
     'no-console': 'off',
 
-    // 禁用 Node.js 全局變量的使用（配合 Nuxt.js 官方範例）
+    // 禁用 Node.js 全局變量的使用（配合 Nuxt 3 使用）
     'node/prefer-global/process': 'off',
   },
 })

@@ -182,8 +182,6 @@ function testValidation() {
   try {
     const data = JSON.parse(testData.value)
 
-    // TODO 根據環境決定是否記錄錯誤日誌
-
     const result = userApi.validateUser(data)
 
     if (result.success && result.data) {
@@ -339,6 +337,7 @@ onMounted(() => {
             <h3 class="user-name">
               {{ user.name }}
             </h3>
+            <p><strong>資料ID:</strong> {{ user.id }}</p>
             <p><strong>Email:</strong> {{ user.email }}</p>
             <p><strong>年齡:</strong> {{ user.age || '未提供' }}</p>
             <p>
