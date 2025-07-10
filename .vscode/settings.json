@@ -24,7 +24,7 @@
     { "rule": "*semi", "severity": "off", "fixable": true }
   ],
 
-  // 啟用 eslint 對所有支援的語言
+  // 啟用
   "eslint.validate": [
     "javascript",
     "javascriptreact",

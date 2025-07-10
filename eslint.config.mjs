@@ -1,4 +1,29 @@
-// @ts-check
-import withNuxt from './.nuxt/eslint.config.mjs';
+import antfu from '@antfu/eslint-config'
 
-export default withNuxt({});
+export default antfu({
+  // 啟用 Vue 和 TypeScript 支援
+  vue: true,
+  typescript: true,
+
+  // 格式化配置
+  formatters: {
+    css: true,
+    html: true,
+    markdown: 'prettier',
+  },
+
+  // 自定義規則覆蓋
+  rules: {
+    // 換行規則
+    'vue/max-attributes-per-line': ['error', {
+      singleline: { max: 1 }, // 單行允許最多 1 個屬性
+      multiline: { max: 1 }, // 多行時每行 1 個屬性
+    }],
+
+    // 允許 console （本案非生產環境會用到）
+    'no-console': 'off',
+
+    // 禁用 Node.js 全局變量的使用（配合 Nuxt.js 官方範例）
+    'node/prefer-global/process': 'off',
+  },
+})
