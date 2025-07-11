@@ -1,9 +1,21 @@
 <script setup lang="ts">
 import type { CreateUserInput, User } from '~/service/schema/user'
 // 手動 import 需要的功能
+import { useRuntimeConfig } from '#app'
 import { computed, onMounted, ref } from 'vue'
 import { useProjectConfig } from '~/composables/useProjectConfig'
 import { userApi } from '~/service/api/user'
+
+// 取得 Runtime Config（原始值）- 只取得客戶端可用的部分
+const runtimeConfig = computed(() => {
+  const config = useRuntimeConfig()
+  // 只返回客戶端可存取的屬性
+  return {
+    public: config.public,
+    app: config.app,
+  }
+})
+
 // 取得專案配置
 const projectConfig = computed(() => useProjectConfig())
 
@@ -40,8 +52,8 @@ async function loadUsers() {
   try {
     users.value = await userApi.getUsers()
 
-    // 只在非正式環境中記錄詳細信息
-    if (projectConfig.value.environment !== 'production') {
+    // 只在 console 模式開啟時記錄詳細信息
+    if (projectConfig.value.showConsole) {
       console.log('載入的用戶:', users.value)
       console.log('使用配置:', projectConfig.value)
     }
@@ -49,8 +61,8 @@ async function loadUsers() {
   catch (err) {
     error.value = err instanceof Error ? err.message : '未知錯誤'
 
-    // 只在非正式環境中記錄錯誤詳情
-    if (projectConfig.value.environment !== 'production') {
+    // 只在 console 模式開啟時記錄錯誤詳情
+    if (projectConfig.value.showConsole) {
       console.error('載入用戶失敗:', err)
     }
   }
@@ -64,8 +76,8 @@ async function loadSingleUser(id: number): Promise<void> {
   try {
     const user = await userApi.getUserById(id)
     if (user) {
-      // 只在非正式環境中記錄詳細信息
-      if (projectConfig.value.environment !== 'production') {
+      // 只在 console 模式開啟時記錄詳細信息
+      if (projectConfig.value.showConsole) {
         console.log('載入的單一用戶:', user)
       }
 
@@ -89,8 +101,8 @@ async function createNewUser() {
   try {
     const createdUser = await userApi.createUser(newUser.value)
 
-    // 只在非正式環境中記錄詳細信息
-    if (projectConfig.value.environment !== 'production') {
+    // 只在 console 模式開啟時記錄詳細信息
+    if (projectConfig.value.showConsole) {
       console.log('創建的用戶:', createdUser)
     }
 
@@ -108,8 +120,8 @@ async function createNewUser() {
   catch (err) {
     error.value = err instanceof Error ? err.message : '創建用戶失敗'
 
-    // 只在非正式環境中記錄錯誤詳情
-    if (projectConfig.value.environment !== 'production') {
+    // 只在 console 模式開啟時記錄錯誤詳情
+    if (projectConfig.value.showConsole) {
       console.error('創建用戶失敗:', err)
     }
   }
@@ -207,8 +219,8 @@ function testValidation() {
     }
   }
   catch (err) {
-    // 只在非正式環境中記錄 JSON 解析錯誤
-    if (projectConfig.value.environment !== 'production') {
+    // 只在 console 模式開啟時記錄 JSON 解析錯誤
+    if (projectConfig.value.showConsole) {
       console.error('JSON 解析錯誤:', err)
     }
 
@@ -242,65 +254,114 @@ onMounted(() => {
     <div class="config-section">
       <h2>🔧 應用程式配置</h2>
 
-      <!-- 應用資訊 -->
-      <div class="config-card">
-        <h3 class="card-title">
-          📱 應用資訊
-        </h3>
-        <p>
-          <strong>除錯模式:</strong>
-          {{ projectConfig.appDebug ? '開啟' : '關閉' }}
-        </p>
-      </div>
+      <!-- 左右欄位佈局 -->
+      <div class="config-grid">
+        <!-- 左欄：處理後的配置 -->
+        <div class="config-left-column">
+          <!-- 應用資訊 -->
+          <div class="config-card">
+            <h3 class="card-title">
+              📱 應用資訊
+            </h3>
+            <p>
+              <strong>顯示 Console:</strong>
+              {{ projectConfig.showConsole ? '開啟' : '關閉' }}
+            </p>
+            <p>
+              <strong>API 來源:</strong>
+              <span
+                :class="{
+                  'status-active': projectConfig.isUseLocalApi,
+                  'status-inactive': !projectConfig.isUseLocalApi,
+                }"
+                class="status-badge"
+              >
+                {{ projectConfig.isUseLocalApi ? '本地 server/api' : '遠端 API' }}
+              </span>
+            </p>
+          </div>
 
-      <!-- API 配置 -->
-      <div class="config-card">
-        <h3 class="card-title">
-          🌐 API 配置
-        </h3>
-        <p>
-          <strong>環境:</strong>
-          <span
-            :class="{
-              'env-production': projectConfig.environment === 'production',
-              'env-docker': projectConfig.environment === 'docker',
-              'env-development': projectConfig.environment === 'development',
-            }"
-            class="env-badge"
-          >
-            {{ projectConfig.environment }}
-          </span>
-        </p>
-        <p>
-          <strong>Base URL:</strong>
-          <code class="code-inline">{{ projectConfig.baseURL }}</code>
-        </p>
-        <p>
-          <strong>環境狀態:</strong>
-          <span
-            :class="{
-              'status-active': projectConfig.environment === 'development',
-              'status-inactive': projectConfig.environment !== 'development',
-            }"
-            class="status-badge"
-          >
-            {{
-              projectConfig.environment === 'development'
-                ? '✅ Mock 模式'
-                : '❌ 真實 API'
-            }}
-          </span>
-        </p>
-        <p><strong>超時設定:</strong> {{ projectConfig.timeout }}ms</p>
-      </div>
+          <!-- API 配置 -->
+          <div class="config-card">
+            <h3 class="card-title">
+              🌐 API 配置
+            </h3>
+            <p>
+              <strong>環境:</strong>
+              <span
+                :class="{
+                  'env-production': projectConfig.environment === 'production',
+                  'env-development': projectConfig.environment === 'development',
+                }"
+                class="env-badge"
+              >
+                {{ projectConfig.environment }}
+              </span>
+            </p>
+            <p>
+              <strong>Base URL:</strong>
+              <code class="code-inline">{{ projectConfig.baseURL || '本地 server/api' }}</code>
+            </p>
+            <p>
+              <strong>API 來源:</strong>
+              <span
+                :class="{
+                  'status-active': projectConfig.isUseLocalApi,
+                  'status-inactive': !projectConfig.isUseLocalApi,
+                }"
+                class="status-badge"
+              >
+                {{
+                  projectConfig.isUseLocalApi
+                    ? '✅ 本地 server/api'
+                    : '🌐 遠端 API'
+                }}
+              </span>
+            </p>
+            <p><strong>超時設定:</strong> {{ projectConfig.timeout }}ms</p>
+          </div>
 
-      <div class="environment-guide">
-        <p><strong>💡 環境切換方法:</strong></p>
-        <ul class="env-list">
-          <li><code>npm run dev</code> - 開發環境 (Mock 資料)</li>
-          <li><code>npm run dev:docker</code> - Docker 環境 (本地 API)</li>
-          <li><code>npm run dev:production</code> - 生產環境 (遠端 API)</li>
-        </ul>
+          <div class="environment-guide">
+            <p><strong>💡 環境變數定義：</strong></p>
+            <ul class="env-list">
+              <li><strong>NUXT_PUBLIC_API_BASE_URL:</strong> 全站 API 地址</li>
+              <li><strong>NUXT_PUBLIC_IS_USE_LOCAL_API:</strong> 限定開發環境使用</li>
+              <li class="ml-4">
+                • <code>true</code> - 不使用 NUXT_PUBLIC_API_BASE_URL，改用當前地址的 /api
+              </li>
+              <li class="ml-4">
+                • <code>false</code> - 使用 NUXT_PUBLIC_API_BASE_URL
+              </li>
+              <li><strong>NUXT_PUBLIC_IS_SHOW_CONSOLE:</strong> 是否顯示通用函式的錯誤訊息與一般訊息告警</li>
+              <li><strong>NUXT_PUBLIC_API_TIMEOUT:</strong> API 延遲設定（毫秒）</li>
+              <li><strong>NUXT_API_ENV:</strong> 環境識別標籤</li>
+              <li><strong>配置修改：</strong> 修改 <code>.env.development</code> 或 <code>.env.production</code> 檔案後重新啟動</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 右欄：原始配置 -->
+        <div class="config-right-column">
+          <!-- Runtime Config 原始值 -->
+          <div class="config-card">
+            <h3 class="card-title">
+              ⚙️ Runtime Config 原始值
+            </h3>
+            <div class="config-json">
+              <pre class="json-code">{{ JSON.stringify(runtimeConfig, null, 2) }}</pre>
+            </div>
+          </div>
+
+          <!-- 處理後的 Project Config -->
+          <div class="config-card">
+            <h3 class="card-title">
+              🔧 處理後的 Project Config
+            </h3>
+            <div class="config-json">
+              <pre class="json-code">{{ JSON.stringify(projectConfig, null, 2) }}</pre>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -567,17 +628,43 @@ onMounted(() => {
   border: 1px solid #0ea5e9;
 }
 
-.config-card {
-  margin-bottom: 15px;
-  padding: 10px;
-  background: white;
-  border-radius: 6px;
+/* 左右欄位佈局 */
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
-.card-title {
-  margin: 0 0 10px 0;
-  color: #1f2937;
-  font-size: 1.1rem;
+.config-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.config-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* JSON 配置顯示 */
+.config-json {
+  max-height: 400px;
+  overflow-y: auto;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.json-code {
+  margin: 0;
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #495057;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 /* 環境標籤 */
@@ -865,6 +952,63 @@ onMounted(() => {
 .error-title {
   margin: 0 0 10px 0;
   font-size: 1.1rem;
+}
+
+/* Debug 區塊樣式 */
+.debug-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.debug-section .btn {
+  margin-bottom: 15px;
+}
+
+.api-test-result {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.api-test-result .json-code {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 8px 0 0 0;
+  font-size: 13px;
+  color: #374151;
+}
+
+.debug-info {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.debug-info p {
+  margin: 0 0 10px 0;
+  font-weight: 600;
+  color: #374151;
+}
+
+.debug-info ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #6b7280;
+}
+
+.debug-info li {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.debug-info strong {
+  color: #374151;
 }
 
 .error-content {

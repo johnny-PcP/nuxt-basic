@@ -8,12 +8,31 @@ import { z } from 'zod'
  */
 export const ProjectConfigSchema = z.object({
   // API 服務配置
-  environment: z.enum(['development', 'docker', 'production']),
-  baseURL: z.string().min(1, 'API 基礎 URL 不能為空'),
+  environment: z.enum(['development', 'production']),
+  // baseURL 可以為空字串（當使用本地 server/api 時）
+  baseURL: z.string(),
   timeout: z.number().positive('API 超時時間必須大於 0'),
 
-  // 應用程式狀態配置
-  appDebug: z.boolean(),
+  // 是否使用本地 API：true = 使用本地 server/api，false = 使用遠端 API
+  isUseLocalApi: z.boolean(),
+
+  // 是否顯示 console 訊息
+  showConsole: z.boolean(),
+}).refine((data) => {
+  // 正式環境：baseURL 必須有值
+  if (data.environment === 'production' && data.baseURL.length === 0) {
+    return false
+  }
+
+  // 開發環境：當 isUseLocalApi 為 false 時，baseURL 不能為空
+  if (data.environment === 'development' && !data.isUseLocalApi && data.baseURL.length === 0) {
+    return false
+  }
+
+  return true
+}, {
+  message: '當使用遠端 API 時，baseURL 不能為空',
+  path: ['baseURL'],
 })
 
 /**

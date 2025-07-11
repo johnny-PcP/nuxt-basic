@@ -10,20 +10,46 @@ import {
   UserSchema,
 } from '../schema/user'
 
-// 用戶 API 服務類別
+/**
+ * 用戶 API 服務類別
+ *
+ * 統一的 API 請求處理，根據 isUseLocalApi 自動切換：
+ * - isUseLocalApi = true: 使用本地 server/api 路由
+ * - isUseLocalApi = false: 使用遠端 API (根據 .env 設定)
+ */
 export class UserApi {
-  private getProjectConfig() {
+  /**
+   * 獲取專案配置
+   */
+  private getConfig() {
     return useProjectConfig()
+  }
+
+  /**
+   * 統一的 API 請求方法
+   */
+  private async request<T>(url: string, options: RequestInit = {}): Promise<T> {
+    const config = this.getConfig()
+
+    const requestOptions: any = {
+      ...options,
+      timeout: config.timeout,
+    }
+
+    // 只有在使用遠端 API 時才設定 baseURL
+    if (config.baseURL) {
+      requestOptions.baseURL = config.baseURL
+    }
+
+    return await $fetch<T>(url, requestOptions)
   }
 
   // 獲取所有用戶
   async getUsers(): Promise<UserList> {
-    try {
-      const projectConfig = this.getProjectConfig()
+    const config = this.getConfig()
 
-      const response = await $fetch('/api/users', {
-        baseURL: projectConfig.baseURL,
-      })
+    try {
+      const response = await this.request('/api/users')
 
       const validationResult = validateSchema(
         UserListResponseSchema,
@@ -33,98 +59,141 @@ export class UserApi {
           throwOnError: true,
         },
       )
+
+      if (config.showConsole) {
+        console.log('✅ 成功獲取用戶列表:', validationResult.data!.data)
+      }
+
       return validationResult.data!.data
     }
-    catch {
+    catch (error) {
+      if (config.showConsole) {
+        console.error('❌ 獲取用戶列表失敗:', error)
+      }
       throw new Error('獲取用戶列表失敗')
     }
   }
 
   // 根據 ID 獲取單一用戶
   async getUserById(id: number): Promise<User | null> {
-    try {
-      const projectConfig = this.getProjectConfig()
+    const config = this.getConfig()
 
-      const response = await $fetch(`/api/users/${id}`, {
-        baseURL: projectConfig.baseURL,
-      })
+    try {
+      const response = await this.request(`/api/users/${id}`)
 
       const validationResult = validateSchema(UserResponseSchema, response, {
         errorMessage: 'API 回應格式驗證失敗',
         throwOnError: true,
       })
+
+      if (config.showConsole) {
+        console.log(`✅ 成功獲取用戶 ID ${id}:`, validationResult.data!.data)
+      }
+
       return validationResult.data!.data
     }
-    catch {
+    catch (error) {
+      if (config.showConsole) {
+        console.error(`❌ 獲取用戶 ID ${id} 失敗:`, error)
+      }
       return null
     }
   }
 
   // 創建新用戶
   async createUser(userData: CreateUserInput): Promise<User> {
+    const config = this.getConfig()
+
     try {
       const inputValidation = validateSchema(CreateUserSchema, userData, {
         errorMessage: '創建用戶輸入資料驗證失敗',
         throwOnError: true,
       })
       const validatedInput = inputValidation.data!
-      const projectConfig = this.getProjectConfig()
 
-      const response = await $fetch('/api/users', {
+      const response = await this.request('/api/users', {
         method: 'POST',
-        baseURL: projectConfig.baseURL,
-        body: validatedInput,
+        body: JSON.stringify(validatedInput),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       })
 
       const responseValidation = validateSchema(UserResponseSchema, response, {
         errorMessage: 'API 回應格式驗證失敗',
         throwOnError: true,
       })
+
+      if (config.showConsole) {
+        console.log('✅ 成功創建用戶:', responseValidation.data!.data)
+      }
+
       return responseValidation.data!.data
     }
-    catch {
+    catch (error) {
+      if (config.showConsole) {
+        console.error('❌ 創建用戶失敗:', error)
+      }
       throw new Error('創建用戶失敗')
     }
   }
 
   // 更新用戶
   async updateUser(id: number, userData: Partial<CreateUserInput>): Promise<User> {
-    try {
-      const projectConfig = this.getProjectConfig()
+    const config = this.getConfig()
 
-      const response = await $fetch(`/api/users/${id}`, {
+    try {
+      const response = await this.request(`/api/users/${id}`, {
         method: 'PUT',
-        baseURL: projectConfig.baseURL,
-        body: userData,
+        body: JSON.stringify(userData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       })
 
       const responseValidation = validateSchema(UserResponseSchema, response, {
         errorMessage: 'API 回應格式驗證失敗',
         throwOnError: true,
       })
+
+      if (config.showConsole) {
+        console.log(`✅ 成功更新用戶 ID ${id}:`, responseValidation.data!.data)
+      }
+
       return responseValidation.data!.data
     }
-    catch {
+    catch (error) {
+      if (config.showConsole) {
+        console.error(`❌ 更新用戶 ID ${id} 失敗:`, error)
+      }
       throw new Error('更新用戶失敗')
     }
   }
 
   // 刪除用戶
   async deleteUser(id: number): Promise<{ success: boolean, message: string }> {
-    try {
-      const projectConfig = this.getProjectConfig()
+    const config = this.getConfig()
 
-      const response = await $fetch(`/api/users/${id}`, {
+    try {
+      const response = await this.request<{ success?: boolean, message?: string }>(`/api/users/${id}`, {
         method: 'DELETE',
-        baseURL: projectConfig.baseURL,
       })
 
-      return {
+      const result = {
         success: response.success || false,
         message: response.message || '刪除成功',
       }
+
+      if (config.showConsole) {
+        console.log(`✅ 成功刪除用戶 ID ${id}:`, result)
+      }
+
+      return result
     }
-    catch {
+    catch (error) {
+      if (config.showConsole) {
+        console.error(`❌ 刪除用戶 ID ${id} 失敗:`, error)
+      }
       throw new Error('刪除用戶失敗')
     }
   }

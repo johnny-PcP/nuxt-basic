@@ -1,5 +1,6 @@
 import type { ZodSchema } from 'zod'
 import { z } from 'zod'
+import { useProjectConfig } from '~/composables/useProjectConfig'
 
 // API 基礎回應結構 Schema
 export const BaseResponseSchema = z.object({
@@ -32,6 +33,18 @@ export interface ValidationResult<T> {
     value?: unknown
   }>
   summary?: string
+}
+
+// 輔助函數：檢查是否應該顯示 console 訊息
+function shouldShowConsole(): boolean {
+  try {
+    const config = useProjectConfig()
+    return config.showConsole
+  }
+  catch {
+    // 如果配置讀取失敗，回退到環境變數檢查
+    return process.env.NODE_ENV !== 'production'
+  }
 }
 
 // 輔助函數：根據路徑提取物件中的值
@@ -103,7 +116,7 @@ export function validateSchema<T>(
       summary: `${errorMessage}: 發現 ${formattedErrors.length} 個驗證錯誤`,
     }
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (shouldShowConsole()) {
       console.error(errorMessage, errorResult)
 
       console.group(`Schema 驗證失敗 - 發現 ${formattedErrors.length} 個欄位錯誤`)
@@ -127,8 +140,8 @@ export function validateSchema<T>(
       summary: `${errorMessage}: ${catchError}`,
     }
 
-    // 開發環境輸出錯誤日誌
-    if (process.env.NODE_ENV !== 'production') {
+    // 根據配置決定是否顯示 console 訊息
+    if (shouldShowConsole()) {
       console.group('💥 系統執行異常')
       console.error('錯誤訊息:', errorMessage)
       console.error('原始錯誤:', error)

@@ -4,9 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
-    "dev:docker": "nuxt dev --dotenv .env.docker",
-    "dev:production": "nuxt dev --dotenv .env.production",
+    "dev": "nuxt dev --dotenv .env.development",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",

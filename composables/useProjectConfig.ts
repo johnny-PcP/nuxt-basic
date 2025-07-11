@@ -9,27 +9,69 @@ import { ProjectConfigSchema } from '~/service/schema/config'
  * 根據環境變數提供統一的配置接口，所有配置都經過 Zod 驗證
  * 確保配置的類型安全性和完整性
  *
+ * 配置邏輯：
+ * - 開發環境：
+ *   - isUseLocalApi = true 時，使用當前 URL 的 /api 路徑（baseURL = ''）
+ *   - isUseLocalApi = false 時，使用 NUXT_PUBLIC_API_BASE_URL 的值
+ * - 正式環境：
+ *   - 忽略 isUseLocalApi 設定，直接使用 NUXT_PUBLIC_API_BASE_URL
+ * - showConsole 控制是否顯示客製的 console 訊息
+ *
+ * 注意事項：
+ * - 只使用客戶端可存取的 runtime config 屬性（public 和 app）
+ * - 環境判斷使用 config.public.environment 而非 server-only 的 config.apiEnv
+ * - API timeout 使用 config.public.apiTimeout，支援客戶端和伺服器端統一設定
+ *
  * @returns {ProjectConfigType} 驗證後的專案配置物件
  *
  * @example
  * ```typescript
  * const config = useProjectConfig()
- * console.log(config.environment) // 'development' | 'docker' | 'production'
- * console.log(config.baseURL)     // API 基礎 URL
+ * console.log(config.environment)     // 'development' | 'production'
+ * console.log(config.baseURL)         // API 基礎 URL
+ * console.log(config.isUseLocalApi)   // true = 本地 API, false = 遠端 API
+ * console.log(config.showConsole)     // true = 顯示 console, false = 不顯示
  * ```
  */
 export function useProjectConfig(): ProjectConfigType {
   const config = useRuntimeConfig()
 
-  // 配置物件組裝 - 完全遵循 .env 文件設定
+  // 取得環境資訊 - 使用 public 配置中的環境資訊
+  const environment = String(config.public.environment || 'development')
+  const isProduction = environment === 'production'
+  const isUseLocalApi = Boolean(config.public.isUseLocalApi)
+
+  // 根據環境決定 baseURL
+  let baseURL: string
+
+  if (isProduction) {
+    // 正式環境：直接使用 NUXT_PUBLIC_API_BASE_URL
+    baseURL = String(config.public.apiBaseUrl || '')
+  }
+  else {
+    // 開發環境：根據 isUseLocalApi 決定
+    if (isUseLocalApi) {
+      // 使用當前 URL 的 /api 路徑
+      baseURL = ''
+    }
+    else {
+      // 使用 NUXT_PUBLIC_API_BASE_URL
+      baseURL = String(config.public.apiBaseUrl || '')
+    }
+  }
+
+  // 配置物件組裝
   const rawConfig = {
     // API 服務配置
-    environment: String(config.public.apiEnv || 'development'),
-    baseURL: String(config.public.apiBaseUrl || ''),
-    timeout: Number(config.public.apiTimeout || 5000),
+    environment,
+    baseURL,
+    timeout: Number(config.public.apiTimeout || 5000), // 使用公開的 apiTimeout 設定
 
-    // 應用程式狀態配置
-    appDebug: Boolean(config.public.appDebug),
+    // 是否使用本地 API（正式環境忽略此設定）
+    isUseLocalApi: isProduction ? false : isUseLocalApi,
+
+    // 是否顯示客製的 console 訊息
+    showConsole: Boolean(config.public.isShowConsole),
   }
 
   // 配置驗證與回傳
