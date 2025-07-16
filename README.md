@@ -65,8 +65,10 @@ const data = ref([])
 
 **`NUXT_PUBLIC_IS_USE_LOCAL_API` 決定 API 呼叫路徑：**
 
-- ✅ `true`：使用本地 API (`/api/xxx`)
+- ✅ `true`：使用本地 Mock API (`server/api/` 目錄)
 - ✅ `false`：使用遠端 API (`NUXT_PUBLIC_API_BASE_URL/xxx`)
+
+> 💡 **開發提示**：本地 API 模式下，`server/api/` 目錄充當 Mock 服務器，適合前端開發階段使用。
 
 ## 🚀 快速開始
 
@@ -228,7 +230,7 @@ npm run start
 // 載入 API 服務
 import { userApi } from '~/service/api/user'
 
-// 取得用戶列表（方法內部會驗證API回傳資料）
+// 取得用戶列表（根據 NUXT_PUBLIC_IS_USE_LOCAL_API 自動切換 Mock/遠端 API）
 const users = await userApi.getUsers()
 
 // 建立用戶（方法內部會驗證API回傳資料）
@@ -251,5 +253,9 @@ A: 1. 檢查檔案名稱是否正確 2. 重新啟動開發伺服器 3. 確認變
 ### Q: API 切換不生效？
 
 A: 確認 `NUXT_PUBLIC_IS_USE_LOCAL_API` 設定正確，並重新啟動伺服器。
+
+### Q: 如何在開發階段使用 Mock API？
+
+A: 設定 `NUXT_PUBLIC_IS_USE_LOCAL_API=true`，系統會自動使用 `server/api/` 目錄下的路由作為 Mock API。
 
 ---
