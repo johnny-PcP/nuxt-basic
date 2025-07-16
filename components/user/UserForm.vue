@@ -45,11 +45,80 @@ async function handleCreateUser() {
     isActive: true,
   }
 }
+
+// 快速填入測試資料
+function fillTestData(type: 'valid' | 'minimal' | 'random') {
+  const testData = {
+    valid: {
+      name: '測試用戶',
+      email: 'test@example.com',
+      age: 25,
+      isActive: true,
+    },
+    minimal: {
+      name: '最少用戶',
+      email: 'minimal@example.com',
+      age: undefined,
+      isActive: false,
+    },
+    random: {
+      name: `隨機用戶${Math.floor(Math.random() * 1000)}`,
+      email: `random${Math.floor(Math.random() * 1000)}@example.com`,
+      age: Math.floor(Math.random() * 50) + 18,
+      isActive: Math.random() > 0.5,
+    },
+  }
+
+  newUser.value = { ...testData[type] }
+}
+
+// 清空表單
+function clearForm() {
+  newUser.value = {
+    name: '',
+    email: '',
+    age: undefined,
+    isActive: true,
+  }
+}
 </script>
 
 <template>
   <div class="section create-user-section">
     <h2>➕ 創建新用戶</h2>
+
+    <!-- 快速填入按鈕 -->
+    <div class="quick-fill-buttons">
+      <button
+        type="button"
+        class="btn btn-success btn-sm"
+        @click="fillTestData('valid')"
+      >
+        ✅ 標準資料
+      </button>
+      <button
+        type="button"
+        class="btn btn-info btn-sm"
+        @click="fillTestData('minimal')"
+      >
+        📝 最少資料
+      </button>
+      <button
+        type="button"
+        class="btn btn-warning btn-sm"
+        @click="fillTestData('random')"
+      >
+        🎲 隨機資料
+      </button>
+      <button
+        type="button"
+        class="btn btn-outline btn-sm"
+        @click="clearForm"
+      >
+        🗑️ 清空
+      </button>
+    </div>
+
     <form
       class="user-form"
       @submit.prevent="handleCreateUser"
@@ -129,6 +198,74 @@ async function handleCreateUser() {
 
 .user-form:hover {
   box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* 快速填入按鈕 */
+.quick-fill-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.btn-info {
+  background: #06b6d4;
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  background: #0891b2;
+}
+
+.btn-warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: #d97706;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .quick-fill-buttons {
+    flex-direction: column;
+  }
+
+  .quick-fill-buttons .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .form-group {

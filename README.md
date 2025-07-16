@@ -2,7 +2,7 @@
 
 > 適用於大型專案和多人協作的 Nuxt 3 架構模板，整合 TypeScript、Zod、ESLint，採用現代化組件設計。
 
-## 🏗️ 專案架構設計理念
+## 專案架構設計理念
 
 ### 1. 主要資料結構層 (`service/schema`)
 
@@ -156,16 +156,41 @@ export const UserSchema = z.object({
   email: z.string().email(),
 })
 
-// 2. 在 API 服務中使用
+// 2. 在 API 服務中使用 (預設 throwOnError: true)
 export class UserApi {
   async getUsers(): Promise<User[]> {
-    const response = await $fetch('/api/users')
-    return UserSchema.array().parse(response)
+    try {
+      const response = await $fetch('/api/users')
+      const result = validateSchema(UserListSchema, response)
+      return result.data // 驗證成功才會到達這裡
+    }
+    catch (error) {
+      // 驗證失敗會拋出異常
+      throw new Error('API 驗證失敗')
+    }
+  }
+
+  // 特殊情況：需要檢查驗證結果而非捕捉異常
+  validateUserInput(data: unknown) {
+    const result = validateSchema(UserSchema, data, { throwOnError: false })
+    if (result.success) {
+      return result.data
+    }
+    else {
+      return result.errors // 返回詳細錯誤信息
+    }
   }
 }
 ```
 
-### 3. 組件分組策略
+### 3. 驗證系統設計
+
+- **預設行為**：`throwOnError: true` - 驗證失敗時拋出異常
+- **異常處理**：API 層使用 try/catch 處理驗證錯誤
+- **錯誤收集**：特殊需求時設定 `throwOnError: false` 收集錯誤詳情
+- **批量驗證**：`validateMultiple` 內部收集所有錯誤後根據設定決定行為
+
+### 4. 組件分組策略
 
 ```
 components/
@@ -228,5 +253,3 @@ A: 1. 檢查檔案名稱是否正確 2. 重新啟動開發伺服器 3. 確認變
 A: 確認 `NUXT_PUBLIC_IS_USE_LOCAL_API` 設定正確，並重新啟動伺服器。
 
 ---
-
-🎯 **目標**：建立一個可擴展、可維護、型別安全的 Nuxt 3 大型專案架構模板。

@@ -38,8 +38,8 @@ export interface ValidationResult<T> {
 // 輔助函數：檢查是否應該顯示 console 訊息
 function shouldShowConsole(): boolean {
   try {
-    const config = useProjectConfig()
-    return config.showConsole
+    const projectConfig = useProjectConfig()
+    return projectConfig.value.showConsole
   }
   catch {
     // 如果配置讀取失敗，回退到環境變數檢查
@@ -84,7 +84,7 @@ export function validateSchema<T>(
   const {
     errorMessage = '資料驗證失敗',
     successMessage = '資料驗證成功',
-    throwOnError = false,
+    throwOnError = true, // 改為預設 true
   } = opts
 
   try {
@@ -164,10 +164,15 @@ export function validateMultiple<T>(
   const results: T[] = []
   const errors: Array<{ index: number, error: string }> = []
 
+  const { throwOnError = true } = options
+
   dataArray.forEach((data, index) => {
+    // 批量驗證內部總是不拋出異常，收集所有錯誤
     const result = validateSchema(schema, data, {
       ...options,
+      throwOnError: false, // 強制為 false，確保能收集所有錯誤
     })
+
     if (result.success && result.data) {
       results.push(result.data)
     }
@@ -177,11 +182,18 @@ export function validateMultiple<T>(
   })
 
   if (errors.length > 0) {
-    return {
+    const errorResult: ValidationResult<T[]> = {
       success: false,
       error: '批量驗證失敗',
       summary: `${errors.length}/${dataArray.length} 項目驗證失敗`,
     }
+
+    // 根據 throwOnError 決定是拋出異常還是返回錯誤
+    if (throwOnError) {
+      throw new Error(errorResult.summary)
+    }
+
+    return errorResult
   }
 
   return {

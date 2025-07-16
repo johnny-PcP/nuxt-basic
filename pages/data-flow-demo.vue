@@ -10,13 +10,16 @@ import ErrorMessage from '~/components/shared/ErrorMessage.vue'
 import ValidationDemo from '~/components/shared/ValidationDemo.vue'
 import UserForm from '~/components/user/UserForm.vue'
 import UserList from '~/components/user/UserList.vue'
+import { useProjectConfig } from '~/composables/useProjectConfig'
 import { useUserDataFlow } from '~/composables/useUserDataFlow'
 
-// 使用資料流 composable
+// 取得統一配置
+const projectConfig = useProjectConfig()
+
+// 使用用戶資料流 composable
 const {
-  runtimeConfig,
-  projectConfig,
   userState,
+  error,
   clearUsers,
   loadUsers,
   loadSingleUser,
@@ -53,7 +56,7 @@ const {
 
     <!-- API 配置資訊 -->
     <ConfigDisplay
-      :runtime-config="runtimeConfig"
+      :runtime-config="projectConfig.runtimeConfig"
       :project-config="projectConfig"
     />
 
@@ -63,7 +66,7 @@ const {
       <UserList
         :users="userState.users"
         :loading="userState.loading"
-        :error="userState.error"
+        :error="error"
         @load-users="loadUsers"
         @clear-users="clearUsers"
         @load-single-user="loadSingleUser"
@@ -72,13 +75,13 @@ const {
       <!-- 創建用戶區域 -->
       <UserForm
         :creating="userState.creating"
-        :error="userState.error"
+        :error="error"
         @create-user="createNewUser"
       />
     </div>
 
     <!-- 錯誤信息 -->
-    <ErrorMessage :error="userState.error" />
+    <ErrorMessage :error="error" />
 
     <!-- Zod 驗證示例 -->
     <ValidationDemo :project-config="projectConfig" />

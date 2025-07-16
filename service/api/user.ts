@@ -19,17 +19,18 @@ import {
  */
 export class UserApi {
   /**
-   * 獲取專案配置
+   * 獲取專案配置（響應式）
    */
-  private getConfig() {
-    return useProjectConfig()
+  private getProjectConfig() {
+    const projectConfig = useProjectConfig()
+    return projectConfig.value
   }
 
   /**
    * 統一的 API 請求方法
    */
   private async request<T>(url: string, options: RequestInit = {}): Promise<T> {
-    const config = this.getConfig()
+    const config = this.getProjectConfig()
 
     const requestOptions: any = {
       ...options,
@@ -46,7 +47,7 @@ export class UserApi {
 
   // 獲取所有用戶
   async getUsers(): Promise<UserList> {
-    const config = this.getConfig()
+    const config = this.getProjectConfig()
 
     try {
       const response = await this.request('/api/users')
@@ -56,7 +57,6 @@ export class UserApi {
         response,
         {
           errorMessage: 'API 回應格式驗證失敗',
-          throwOnError: true,
         },
       )
 
@@ -76,14 +76,13 @@ export class UserApi {
 
   // 根據 ID 獲取單一用戶
   async getUserById(id: number): Promise<User | null> {
-    const config = this.getConfig()
+    const config = this.getProjectConfig()
 
     try {
       const response = await this.request(`/api/users/${id}`)
 
       const validationResult = validateSchema(UserResponseSchema, response, {
         errorMessage: 'API 回應格式驗證失敗',
-        throwOnError: true,
       })
 
       if (config.showConsole) {
@@ -102,12 +101,11 @@ export class UserApi {
 
   // 創建新用戶
   async createUser(userData: CreateUserInput): Promise<User> {
-    const config = this.getConfig()
+    const config = this.getProjectConfig()
 
     try {
       const inputValidation = validateSchema(CreateUserSchema, userData, {
         errorMessage: '創建用戶輸入資料驗證失敗',
-        throwOnError: true,
       })
       const validatedInput = inputValidation.data!
 
@@ -121,7 +119,6 @@ export class UserApi {
 
       const responseValidation = validateSchema(UserResponseSchema, response, {
         errorMessage: 'API 回應格式驗證失敗',
-        throwOnError: true,
       })
 
       if (config.showConsole) {
@@ -140,7 +137,7 @@ export class UserApi {
 
   // 更新用戶
   async updateUser(id: number, userData: Partial<CreateUserInput>): Promise<User> {
-    const config = this.getConfig()
+    const config = this.getProjectConfig()
 
     try {
       const response = await this.request(`/api/users/${id}`, {
@@ -153,7 +150,6 @@ export class UserApi {
 
       const responseValidation = validateSchema(UserResponseSchema, response, {
         errorMessage: 'API 回應格式驗證失敗',
-        throwOnError: true,
       })
 
       if (config.showConsole) {
@@ -172,7 +168,7 @@ export class UserApi {
 
   // 刪除用戶
   async deleteUser(id: number): Promise<{ success: boolean, message: string }> {
-    const config = this.getConfig()
+    const config = this.getProjectConfig()
 
     try {
       const response = await this.request<{ success?: boolean, message?: string }>(`/api/users/${id}`, {
@@ -203,6 +199,7 @@ export class UserApi {
     return validateSchema(UserSchema, userData, {
       errorMessage: '用戶資料驗證失敗',
       successMessage: '用戶資料驗證成功',
+      throwOnError: false, // 驗證功能返回錯誤物件而不拋出異常
     })
   }
 
@@ -211,6 +208,7 @@ export class UserApi {
     return validateMultiple(UserSchema, userDataArray, {
       errorMessage: '用戶資料批量驗證失敗',
       successMessage: '用戶資料批量驗證成功',
+      throwOnError: false, // 批量驗證返回錯誤物件
     })
   }
 
@@ -219,6 +217,7 @@ export class UserApi {
     return validateSchema(CreateUserSchema, inputData, {
       errorMessage: '創建用戶輸入資料驗證失敗',
       successMessage: '創建用戶輸入資料驗證成功',
+      throwOnError: false, // 輸入驗證返回錯誤物件
     })
   }
 }
