@@ -20,10 +20,10 @@ export default antfu({
       multiline: { max: 1 }, // 多行時每行 1 個屬性
     }],
 
-    // 允許 console（開發和除錯需要）
+    // 允許 console（開發和調試需要）
     'no-console': 'off',
 
-    // 禁用 Node.js 全局變量的使用（配合 Nuxt 3 使用）
+    // 禁用 Node.js 全域變數（配合 Nuxt 3 使用）
     'node/prefer-global/process': 'off',
   },
 })

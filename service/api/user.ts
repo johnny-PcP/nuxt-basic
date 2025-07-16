@@ -1,6 +1,6 @@
 import type { CreateUserInput, User, UserList } from '../schema/user'
-// 手動導入所有依賴 (關閉自動導入)
-import { $fetch } from 'ofetch' // Nuxt 內建 fetch 函式
+// 手動導入所有依賴
+import { $fetch } from 'ofetch'
 import { useProjectConfig } from '~/composables/useProjectConfig'
 import { validateMultiple, validateSchema } from '~/service/schema/common'
 import {
@@ -36,7 +36,7 @@ export class UserApi {
       timeout: config.timeout,
     }
 
-    // 只有在使用遠端 API 時才設定 baseURL
+    // 使用遠端 API 時才設定 baseURL
     if (config.baseURL) {
       requestOptions.baseURL = config.baseURL
     }
@@ -223,5 +223,5 @@ export class UserApi {
   }
 }
 
-// 單例實例導出
+// 導出 API 實例
 export const userApi = new UserApi()

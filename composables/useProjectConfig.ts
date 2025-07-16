@@ -27,10 +27,10 @@ import { ProjectConfigSchema } from '~/service/schema/config'
  * @example
  * ```typescript
  * const config = useProjectConfig()
- * console.log(config.environment)     // 'development' | 'production'
- * console.log(config.baseURL)         // API 基礎 URL
- * console.log(config.isUseLocalApi)   // true = 本地 API, false = 遠端 API
- * console.log(config.showConsole)     // true = 顯示 console, false = 不顯示
+ * // config.environment     // 'development' | 'production'
+ * // config.baseURL         // API 基礎 URL
+ * // config.isUseLocalApi   // true = 本地 API, false = 遠端 API
+ * // config.showConsole     // true = 顯示 console, false = 不顯示
  * ```
  */
 export function useProjectConfig(): ProjectConfigType {

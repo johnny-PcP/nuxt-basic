@@ -9,23 +9,23 @@ import { z } from 'zod'
 export const ProjectConfigSchema = z.object({
   // API 服務配置
   environment: z.enum(['development', 'production']),
-  // baseURL 可以為空字串（當使用本地 server/api 時）
+  // baseURL 可以為空字串（使用本地 server/api 時）
   baseURL: z.string(),
   timeout: z.number().positive('API 超時時間必須大於 0'),
 
-  // 是否使用本地 API：true = 使用本地 server/api，false = 使用遠端 API
+  // 是否使用本地 API：true = 本地 server/api，false = 遠端 API
   isUseLocalApi: z.boolean(),
 
   // 是否顯示 console 訊息
   showConsole: z.boolean(),
 }).refine((data) => {
-  // 正式環境：baseURL 必須有值
-  if (data.environment === 'production' && data.baseURL.length === 0) {
+  // 正式環境：baseURL 不能為空
+  if (data.environment === 'production' && !data.baseURL) {
     return false
   }
 
-  // 開發環境：當 isUseLocalApi 為 false 時，baseURL 不能為空
-  if (data.environment === 'development' && !data.isUseLocalApi && data.baseURL.length === 0) {
+  // 開發環境：當使用遠端 API 時，baseURL 不能為空
+  if (data.environment === 'development' && !data.isUseLocalApi && !data.baseURL) {
     return false
   }
 

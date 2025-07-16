@@ -29,11 +29,11 @@ useHead({
       </div>
 
       <!-- 導航卡片 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        <!-- Data Flow Demo 卡片 -->
+      <div class="max-w-2xl mx-auto">
+        <!-- Data Flow 示例卡片 -->
         <NuxtLink
           to="/data-flow-demo"
-          class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 p-8 border border-gray-200"
+          class="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 p-8 border border-gray-200 block"
         >
           <div class="flex items-center mb-6">
             <div class="bg-blue-500 text-white p-3 rounded-lg mr-4">
@@ -52,7 +52,7 @@ useHead({
             <h2
               class="text-2xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors"
             >
-              📊 資料流程示範
+              📊 資料流程示例
             </h2>
           </div>
 
@@ -64,7 +64,7 @@ useHead({
           <div class="space-y-2 mb-6">
             <div class="flex items-center text-sm text-gray-500">
               <span class="w-2 h-2 bg-green-400 rounded-full mr-2" />
-              完整的 CRUD 操作示範
+              完整的 CRUD 操作示例
             </div>
             <div class="flex items-center text-sm text-gray-500">
               <span class="w-2 h-2 bg-green-400 rounded-full mr-2" />
